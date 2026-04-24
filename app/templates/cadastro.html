@@ -1,0 +1,25 @@
+{% extends 'base_form.html' %}
+
+{% block title %}
+Cadastro - Delart
+{% endblock %}
+
+{% block content %}
+<form action="">
+  <article>
+    <h1>Cadastre-se agora!</h1>
+    <span>Faça parte da plataforma</span>
+  </article>
+  <div class="input-container">
+    <div class="data-input">
+      <label for="nome">Nome de usuário</label>
+      <input type="text" name="nome" id="nome" placeholder="Nome">
+    </div>
+    <div class="data-input">
+      <label for="senha">Senha</label>
+      <input type="password" name="senha" id="senha" placeholder="Senha">
+    </div>
+    <button type="submit">Criar conta</button>
+  </div>
+</form>
+{% endblock %}
