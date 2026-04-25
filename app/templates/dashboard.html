@@ -1,0 +1,82 @@
+{% extends "base_form.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard">
+
+    <article>
+        <h1>Dashboard</h1>
+        <span>Gerencie seus agendamentos</span>
+    </article>
+
+    <div class="input-container">
+        <input type="text" id="titulo" placeholder="Título">
+        <input type="text" id="descricao" placeholder="Descrição">
+        <button onclick="criar()">Criar agendamento</button>
+    </div>
+
+    <div class="lista" id="lista-agendamentos"></div>
+
+</div>
+
+<script>
+async function carregar() {
+    const res = await fetch('/agendamentos')
+    const data = await res.json()
+
+    const lista = document.getElementById('lista-agendamentos')
+    lista.innerHTML = ''
+
+    data.agendamentos.forEach(a => {
+        lista.innerHTML += `
+            <div class="item">
+                <strong>${a.titulo}</strong>
+                <span>${a.descricao || ''}</span>
+                <div class="acoes">
+                    <button onclick="editar(${a.id})">Editar</button>
+                    <button onclick="deletar(${a.id})">Excluir</button>
+                </div>
+            </div>
+        `
+    })
+}
+
+async function criar() {
+    const titulo = document.getElementById('titulo').value
+    const descricao = document.getElementById('descricao').value
+
+    await fetch('/criar-agendamento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo, descricao })
+    })
+
+    carregar()
+}
+
+async function deletar(id) {
+    await fetch(`/agendamentos/${id}`, { method: 'DELETE' })
+    carregar()
+}
+
+async function editar(id) {
+    const titulo = prompt("Novo título:")
+    const descricao = prompt("Nova descrição:")
+
+    await fetch(`/agendamentos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo, descricao })
+    })
+
+    carregar()
+}
+
+carregar()
+</script>
+
+{% endblock %}  
