@@ -4,7 +4,7 @@ class Usuario(db.Model):
     __tablename__ = 'usuarios'
 
     id = db.Column(db.Integer, primary_key=True)
-    user = db.Column(db.String, nullable=False)
+    nome = db.Column(db.String, nullable=False)
     senha = db.Column(db.String, nullable=False)
 
     agendamentos = db.relationship('Agendamento',backref='usuario') # backref -> cria o relacionamento inverso automaticamente

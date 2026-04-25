@@ -16,10 +16,19 @@ def cadastro():
         nome = request.form.get('nome')
         senha = request.form.get('senha')
 
-        # (opcional) salvar usuário no banco depois
-        # novo_usuario = Usuario(nome=nome, senha=senha)
-        # db.session.add(novo_usuario)
-        # db.session.commit()
+        if not nome or not senha:
+            return render_template(
+                'cadastro.html',
+                erro='Nome e senha são obrigatórios'
+            )
+
+        novo_usuario = Usuario(
+            nome=nome,
+            senha=senha
+        )
+
+        db.session.add(novo_usuario)
+        db.session.commit()
 
         return redirect(url_for('dashboard'))
 
