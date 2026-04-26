@@ -32,6 +32,10 @@ article {
     font-size: 1.1em;
 }
 
+a {
+    color: cyan
+}
+
 .input-container {
     display: flex;
     flex-direction: column;

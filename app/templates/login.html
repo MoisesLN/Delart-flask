@@ -1,15 +1,15 @@
 {% extends 'base_form.html' %}
 
 {% block title %}
-Cadastro - Delart
+Login - Delart
 {% endblock %}
 
 {% block content %}
 <form method="POST">
   <article>
-    <h1>Cadastre-se agora!</h1>
-    <span>Faça parte da plataforma</span>
-    <p>Já possui uma conta? <a href="{{url_for('login')}}">Login</a></p>
+    <h1>Fazer login</h1>
+    <span>Continue criando seus agendamentos na melhor plataforma</span>
+    <p>Ainda não possui uma conta? <a href="{{url_for('cadastro')}}">Cadastre-se</a></p>
     {% if erro %}
       <p style="color: #ff6b6b; font-weight: 600;">{{ erro }}</p>
     {% endif %}
@@ -26,7 +26,7 @@ Cadastro - Delart
       <input type="password" name="senha" id="senha" placeholder="Senha">
     </div>
 
-    <button type="submit">Criar conta</button>
+    <button type="submit">Entrar</button>
   </div>
 </form>
 {% endblock %}
