@@ -1,13 +1,13 @@
 # Delart-flask
 
-Projeto Flask sobre Delart Estética Automotiva. Conta com login e CRUD básico de agendamentos usando Flask e SQLAlchemy.
+Projeto Flask sobre Delart Estética Automotiva. Conta com login e CRUD básico de agendamentos usando Flask e sqlite3.
 
 ## Endpoints
 
 | Método | Endpoint | Função |
 |---|---|---|
 | `GET` | `/` | Renderiza a página de cadastro |
-| `GET` | `/agendamentos` | Lista todos os agendamentos |
+| `GET` | `/agendamentos` | Lista todos os agendamentos do usuário logado |
 | `GET` | `/agendamentos/<id>` | Busca um agendamento específico |
 | `POST` | `/criar-agendamento` | Cria um novo agendamento |
 | `PUT` | `/agendamentos/<id>` | Atualiza um agendamento existente |

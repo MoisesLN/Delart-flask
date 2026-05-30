@@ -1,13 +1,14 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
-from db import db
-from models import Usuario, Agendamento
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from db import get_db, init_db
 
 app = Flask(__name__)
 app.secret_key = 'd626428838bab4dd0736eb2e79918e0e'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 
-db.init_app(app)
+
+def row_to_dict(row):
+    return dict(row) if row else None
 
 
 # 🔥 CADASTRO + REDIRECIONAMENTO
@@ -23,23 +24,34 @@ def cadastro():
                 erro='Nome e senha são obrigatórios'
             )
 
-        usuario_existente = Usuario.query.filter_by(nome=nome).first()
+        with get_db() as conn:
+            usuario_existente = conn.execute(
+                "SELECT id FROM usuarios WHERE nome = ?",
+                (nome,)
+            ).fetchone()
+
         if usuario_existente:
             return render_template(
                 'cadastro.html',
                 erro='Este nome de usuário já está em uso'
             )
 
-        novo_usuario = Usuario(
-            nome=nome,
-            senha=generate_password_hash(senha)
-        )
+        senha_hash = generate_password_hash(senha)
+        with get_db() as conn:
+            cursor = conn.execute(
+                "INSERT INTO usuarios (nome, senha) VALUES (?, ?)",
+                (nome, senha_hash)
+            )
+            conn.commit()
+            novo_id = cursor.lastrowid
 
-        db.session.add(novo_usuario)
-        db.session.commit()
+            novo_usuario = conn.execute(
+                "SELECT id, nome FROM usuarios WHERE id = ?",
+                (novo_id,)
+            ).fetchone()
 
-        session['usuario_id'] = novo_usuario.id
-        session['usuario_nome'] = novo_usuario.nome
+        session['usuario_id'] = novo_usuario['id']
+        session['usuario_nome'] = novo_usuario['nome']
 
         return redirect(url_for('dashboard'))
 
@@ -57,9 +69,13 @@ def login():
                 erro='Nome e senha são obrigatórios'
             )
 
-        usuario = Usuario.query.filter_by(nome=nome).first()
+        with get_db() as conn:
+            usuario = conn.execute(
+                "SELECT id, nome, senha FROM usuarios WHERE nome = ?",
+                (nome,)
+            ).fetchone()
 
-        senha_armazenada = usuario.senha if usuario else ''
+        senha_armazenada = usuario['senha'] if usuario else ''
         senha_criptografada = senha_armazenada.startswith(('pbkdf2:', 'scrypt:'))
         senha_valida = (
             check_password_hash(senha_armazenada, senha)
@@ -73,8 +89,8 @@ def login():
                 erro='Usuário ou senha inválidos'
             )
 
-        session['usuario_id'] = usuario.id
-        session['usuario_nome'] = usuario.nome
+        session['usuario_id'] = usuario['id']
+        session['usuario_nome'] = usuario['nome']
 
         return redirect(url_for('dashboard'))
 
@@ -101,12 +117,18 @@ def ver_agendamentos():
     if 'usuario_id' not in session:
         return jsonify({"message": "Não autenticado"}), 401
 
-    agendamentos = Agendamento.query.filter_by(
-        agendamento_user=session['usuario_id']
-    ).all()
+    with get_db() as conn:
+        agendamentos = conn.execute(
+            """
+            SELECT id, agendamento_user, titulo, descricao, status
+            FROM agendamentos
+            WHERE agendamento_user = ?
+            """,
+            (session['usuario_id'],)
+        ).fetchall()
 
     return jsonify({
-        "agendamentos": [a.to_dict() for a in agendamentos]
+        "agendamentos": [row_to_dict(a) for a in agendamentos]
     }), 200
 
 
@@ -116,16 +138,21 @@ def ver_agendamento_especifico(agendamento_id):
     if 'usuario_id' not in session:
         return jsonify({"message": "Não autenticado"}), 401
 
-    agendamento = Agendamento.query.filter_by(
-        id=agendamento_id,
-        agendamento_user=session['usuario_id']
-    ).first()
+    with get_db() as conn:
+        agendamento = conn.execute(
+            """
+            SELECT id, agendamento_user, titulo, descricao, status
+            FROM agendamentos
+            WHERE id = ? AND agendamento_user = ?
+            """,
+            (agendamento_id, session['usuario_id'])
+        ).fetchone()
 
     if not agendamento:
         return jsonify({"message": "Agendamento não encontrado"}), 404
 
     return jsonify({
-        "agendamento": agendamento.to_dict()
+        "agendamento": row_to_dict(agendamento)
     }), 200
 
 
@@ -146,19 +173,28 @@ def criar_agendar():
     if not titulo:
         return jsonify({"message": "Título é obrigatório"}), 400
 
-    novo_agendamento = Agendamento(
-        titulo=titulo,
-        descricao=descricao,
-        status=status,
-        agendamento_user=session['usuario_id']
-    )
-
-    db.session.add(novo_agendamento)
-    db.session.commit()
+    with get_db() as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO agendamentos (agendamento_user, titulo, descricao, status)
+            VALUES (?, ?, ?, ?)
+            """,
+            (session['usuario_id'], titulo, descricao, status)
+        )
+        conn.commit()
+        novo_id = cursor.lastrowid
+        novo_agendamento = conn.execute(
+            """
+            SELECT id, agendamento_user, titulo, descricao, status
+            FROM agendamentos
+            WHERE id = ? AND agendamento_user = ?
+            """,
+            (novo_id, session['usuario_id'])
+        ).fetchone()
 
     return jsonify({
         "message": "Criado com sucesso",
-        "agendamento": novo_agendamento.to_dict()
+        "agendamento": row_to_dict(novo_agendamento)
     }), 201
 
 
@@ -168,10 +204,15 @@ def atualizar_agendamento(agendamento_id):
     if 'usuario_id' not in session:
         return jsonify({"message": "Não autenticado"}), 401
 
-    agendamento = Agendamento.query.filter_by(
-        id=agendamento_id,
-        agendamento_user=session['usuario_id']
-    ).first()
+    with get_db() as conn:
+        agendamento = conn.execute(
+            """
+            SELECT id, agendamento_user, titulo, descricao, status
+            FROM agendamentos
+            WHERE id = ? AND agendamento_user = ?
+            """,
+            (agendamento_id, session['usuario_id'])
+        ).fetchone()
 
     if not agendamento:
         return jsonify({"message": "Agendamento não encontrado"}), 404
@@ -181,10 +222,20 @@ def atualizar_agendamento(agendamento_id):
     if not data:
         return jsonify({"message": "Nenhum dado enviado"}), 400
 
-    agendamento.titulo = data.get('titulo', agendamento.titulo)
-    agendamento.descricao = data.get('descricao', agendamento.descricao)
-    agendamento.status = data.get('status', agendamento.status)
-    db.session.commit()
+    titulo = data.get('titulo', agendamento['titulo'])
+    descricao = data.get('descricao', agendamento['descricao'])
+    status = data.get('status', agendamento['status'])
+
+    with get_db() as conn:
+        conn.execute(
+            """
+            UPDATE agendamentos
+            SET titulo = ?, descricao = ?, status = ?
+            WHERE id = ? AND agendamento_user = ?
+            """,
+            (titulo, descricao, status, agendamento_id, session['usuario_id'])
+        )
+        conn.commit()
 
     return jsonify({"message": "Atualizado com sucesso"}), 200
 
@@ -195,23 +246,30 @@ def remover_agendamento(agendamento_id):
     if 'usuario_id' not in session:
         return jsonify({"message": "Não autenticado"}), 401
 
-    agendamento = Agendamento.query.filter_by(
-        id=agendamento_id,
-        agendamento_user=session['usuario_id']
-    ).first()
+    with get_db() as conn:
+        agendamento = conn.execute(
+            """
+            SELECT id FROM agendamentos
+            WHERE id = ? AND agendamento_user = ?
+            """,
+            (agendamento_id, session['usuario_id'])
+        ).fetchone()
 
     if not agendamento:
         return jsonify({"message": "Agendamento não encontrado"}), 404
 
-    db.session.delete(agendamento)
-    db.session.commit()
+    with get_db() as conn:
+        conn.execute(
+            "DELETE FROM agendamentos WHERE id = ? AND agendamento_user = ?",
+            (agendamento_id, session['usuario_id'])
+        )
+        conn.commit()
 
     return jsonify({"message": "Deletado com sucesso"}), 200
 
 
 # 🔥 START APP
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    init_db()
 
     app.run(debug=True)
