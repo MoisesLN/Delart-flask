@@ -1,0 +1,55 @@
+{% extends "base_form.html" %}
+
+{% block title %}
+Agendamentos
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <article>
+        <h1>Agendamentos</h1>
+        <span>Seus agendamentos cadastrados</span>
+        <p>
+            Olá, {{ session.get('usuario_nome') }} |
+            <a href="{{ url_for('dashboard') }}">Dashboard</a> |
+            <a href="{{ url_for('novo_agendamento') }}">Novo</a> |
+            <a href="{{ url_for('logout') }}">Sair</a>
+        </p>
+    </article>
+
+    <form method="GET" class="input-container">
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar por título ou descrição">
+        <select name="status">
+            <option value="" {% if status == '' %}selected{% endif %}>Todos os status</option>
+            <option value="0" {% if status == '0' %}selected{% endif %}>Pendente</option>
+            <option value="1" {% if status == '1' %}selected{% endif %}>Confirmado</option>
+            <option value="2" {% if status == '2' %}selected{% endif %}>Finalizado</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <div class="lista">
+        {% if agendamentos %}
+            {% for a in agendamentos %}
+                <div class="item">
+                    <strong>{{ a['titulo'] }}</strong>
+                    <span>{{ a['descricao'] or '' }}</span>
+                    <span>
+                        Status:
+                        {% if a['status'] == 0 %}Pendente{% elif a['status'] == 1 %}Confirmado{% else %}Finalizado{% endif %}
+                    </span>
+                    <div class="acoes">
+                        <a href="{{ url_for('detalhe_agendamento', agendamento_id=a['id']) }}"><button type="button">Ver</button></a>
+                        <a href="{{ url_for('editar_agendamento', agendamento_id=a['id']) }}"><button type="button">Editar</button></a>
+                        <form method="POST" action="{{ url_for('remover_agendamento_html', agendamento_id=a['id']) }}">
+                            <button type="submit">Remover</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Nenhum agendamento encontrado.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -10,6 +10,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
 <body>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <div style="width: min(700px, 90vw); margin: 1em auto;">
+                {% for category, message in messages %}
+                    <p style="color: #ffd166; font-weight: 600; margin-bottom: .5em;">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     {% block content %}
     {% endblock %}
 </body>

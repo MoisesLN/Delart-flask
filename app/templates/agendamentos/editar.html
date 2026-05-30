@@ -1,0 +1,29 @@
+{% extends "base_form.html" %}
+
+{% block title %}
+Editar Agendamento
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+    <article>
+        <h1>Editar agendamento</h1>
+        <span>Atualize os dados do serviço</span>
+        <p>
+            <a href="{{ url_for('listar_agendamentos') }}">Voltar para lista</a> |
+            <a href="{{ url_for('logout') }}">Sair</a>
+        </p>
+    </article>
+
+    <div class="input-container">
+        <input type="text" name="titulo" placeholder="Título" value="{{ agendamento['titulo'] }}">
+        <input type="text" name="descricao" placeholder="Descrição" value="{{ agendamento['descricao'] or '' }}">
+        <select name="status">
+            <option value="0" {% if agendamento['status'] == 0 %}selected{% endif %}>Pendente</option>
+            <option value="1" {% if agendamento['status'] == 1 %}selected{% endif %}>Confirmado</option>
+            <option value="2" {% if agendamento['status'] == 2 %}selected{% endif %}>Finalizado</option>
+        </select>
+        <button type="submit">Salvar alterações</button>
+    </div>
+</form>
+{% endblock %}

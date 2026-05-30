@@ -1,0 +1,36 @@
+{% extends "base_form.html" %}
+
+{% block title %}
+Detalhe do Agendamento
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <article>
+        <h1>Detalhe do agendamento</h1>
+        <span>Informações do serviço</span>
+        <p>
+            <a href="{{ url_for('listar_agendamentos') }}">Voltar para lista</a> |
+            <a href="{{ url_for('logout') }}">Sair</a>
+        </p>
+    </article>
+
+    <div class="lista">
+        <div class="item">
+            <strong>{{ agendamento['titulo'] }}</strong>
+            <span>{{ agendamento['descricao'] or '' }}</span>
+            <span>
+                Status:
+                {% if agendamento['status'] == 0 %}Pendente{% elif agendamento['status'] == 1 %}Confirmado{% else %}Finalizado{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="acoes">
+        <a href="{{ url_for('editar_agendamento', agendamento_id=agendamento['id']) }}"><button type="button">Editar</button></a>
+        <form method="POST" action="{{ url_for('remover_agendamento_html', agendamento_id=agendamento['id']) }}">
+            <button type="submit">Remover</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

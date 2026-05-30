@@ -1,0 +1,29 @@
+{% extends "base_form.html" %}
+
+{% block title %}
+Novo Agendamento
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+    <article>
+        <h1>Novo agendamento</h1>
+        <span>Cadastre um novo serviço</span>
+        <p>
+            <a href="{{ url_for('listar_agendamentos') }}">Voltar para lista</a> |
+            <a href="{{ url_for('logout') }}">Sair</a>
+        </p>
+    </article>
+
+    <div class="input-container">
+        <input type="text" name="titulo" placeholder="Título" value="{{ titulo|default('') }}">
+        <input type="text" name="descricao" placeholder="Descrição" value="{{ descricao|default('') }}">
+        <select name="status">
+            <option value="0">Pendente</option>
+            <option value="1">Confirmado</option>
+            <option value="2">Finalizado</option>
+        </select>
+        <button type="submit">Salvar</button>
+    </div>
+</form>
+{% endblock %}

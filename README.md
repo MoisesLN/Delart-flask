@@ -2,16 +2,20 @@
 
 Projeto Flask sobre Delart Estética Automotiva. Conta com login e CRUD básico de agendamentos usando Flask e sqlite3.
 
+O sistema possui CRUD HTML completo de agendamentos, com cadastro, listagem, detalhes, edição, remoção e filtros por string de consulta.
+
 ## Endpoints
 
 | Método | Endpoint | Função |
 |---|---|---|
 | `GET` | `/` | Renderiza a página de cadastro |
-| `GET` | `/agendamentos` | Lista todos os agendamentos do usuário logado |
-| `GET` | `/agendamentos/<id>` | Busca um agendamento específico |
-| `POST` | `/criar-agendamento` | Cria um novo agendamento |
-| `PUT` | `/agendamentos/<id>` | Atualiza um agendamento existente |
-| `DELETE` | `/agendamentos/<id>` | Remove um agendamento |
+| `GET` | `/agendamentos` | Lista todos os agendamentos do usuário logado (HTML) |
+| `GET` | `/agendamentos/novo` | Formulário HTML para novo agendamento |
+| `POST` | `/agendamentos/novo` | Cria um novo agendamento (HTML) |
+| `GET` | `/agendamentos/<id>` | Detalhes do agendamento (HTML) |
+| `GET` | `/agendamentos/<id>/editar` | Formulário de edição (HTML) |
+| `POST` | `/agendamentos/<id>/editar` | Atualiza um agendamento (HTML) |
+| `POST` | `/agendamentos/<id>/remover` | Remove um agendamento (HTML) |
 
 ---
 
@@ -29,144 +33,40 @@ cadastro.html
 
 ## `GET /agendamentos`
 
-Lista todos os agendamentos cadastrados.
+Lista todos os agendamentos cadastrados do usuário logado (HTML). Aceita filtros por query string:
 
-**Retorno esperado:**
-
-```json
-{
-  "agendamentos": [
-    {
-      "id": 1,
-      "agendamento_user": 1,
-      "titulo": "Lavagem completa",
-      "descricao": "Lavagem externa e interna do veículo",
-      "status": 1
-    }
-  ]
-}
-```
+- `/agendamentos?busca=texto`
+- `/agendamentos?status=0`
+- `/agendamentos?status=1`
+- `/agendamentos?status=2`
 
 ---
 
 ## `GET /agendamentos/<id>`
 
-Busca um agendamento específico pelo ID.
-
-**Retorno esperado:**
-
-```json
-{
-  "agendamento": {
-    "id": 1,
-    "agendamento_user": 1,
-    "titulo": "Lavagem completa",
-    "descricao": "Lavagem externa e interna do veículo",
-    "status": 1
-  }
-}
-```
-
-**Caso não encontre:**
-
-```json
-{
-  "message": "Agendamento não encontrado"
-}
-```
+Exibe os detalhes de um agendamento específico pelo ID (HTML).
 
 ---
 
-## `POST /criar-agendamento`
+## CRUD HTML
 
-Cria um novo agendamento.
+O CRUD principal é feito por formulários HTML com redirecionamentos:
 
-**Exemplo de envio:**
-
-```json
-{
-  "agendamento_user": 1,
-  "titulo": "Polimento",
-  "descricao": "Polimento técnico automotivo",
-  "status": 1
-}
-```
-
-**Retorno esperado:**
-
-```json
-{
-  "message": "Agendamento criado com sucesso",
-  "agendamento": {
-    "id": 1,
-    "agendamento_user": 1,
-    "titulo": "Polimento",
-    "descricao": "Polimento técnico automotivo",
-    "status": 1
-  }
-}
-```
+- Cadastro: `/agendamentos/novo`
+- Edição: `/agendamentos/<id>/editar`
+- Remoção: `/agendamentos/<id>/remover`
 
 ---
 
-## `PUT /agendamentos/<id>`
+## Endpoints JSON (opcional)
 
-Atualiza um agendamento existente.
+Os endpoints JSON continuam disponíveis para compatibilidade:
 
-**Exemplo de envio:**
-
-```json
-{
-  "titulo": "Polimento atualizado",
-  "descricao": "Polimento técnico com vitrificação",
-  "status": 2
-}
-```
-
-**Retorno esperado:**
-
-```json
-{
-  "message": "Agendamento atualizado com sucesso",
-  "agendamento": {
-    "id": 1,
-    "agendamento_user": 1,
-    "titulo": "Polimento atualizado",
-    "descricao": "Polimento técnico com vitrificação",
-    "status": 2
-  }
-}
-```
-
-**Caso não encontre:**
-
-```json
-{
-  "message": "Agendamento não encontrado"
-}
-```
-
----
-
-## `DELETE /agendamentos/<id>`
-
-Remove um agendamento pelo ID.
-
-**Retorno esperado:**
-
-```json
-{
-  "message": "Agendamento deletado com sucesso"
-}
-```
-
-**Caso não encontre:**
-
-```json
-{
-  "message": "Agendamento não encontrado"
-}
-```
+- `GET /api/agendamentos`
+- `GET /api/agendamentos/<id>`
+- `POST /criar-agendamento`
+- `PUT /agendamentos/<id>`
+- `DELETE /agendamentos/<id>`
 
 ---
 
