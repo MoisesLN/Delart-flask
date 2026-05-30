@@ -1,15 +1,12 @@
-from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash
 from functools import wraps
+
+from flask import Flask, request, render_template, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import get_db, init_db
 
 app = Flask(__name__)
 app.secret_key = 'd626428838bab4dd0736eb2e79918e0e'
-
-
-def row_to_dict(row):
-    return dict(row) if row else None
 
 
 def login_required(view):
@@ -291,162 +288,6 @@ def remover_agendamento_html(agendamento_id):
     flash('Agendamento removido com sucesso', 'success')
     return redirect(url_for('listar_agendamentos'))
 
-
-# 🔥 VER TODOS AGENDAMENTOS
-@app.route('/api/agendamentos', methods=['GET'])
-def ver_agendamentos():
-    if 'usuario_id' not in session:
-        return jsonify({"message": "Não autenticado"}), 401
-
-    with get_db() as conn:
-        agendamentos = conn.execute(
-            """
-            SELECT id, agendamento_user, titulo, descricao, status
-            FROM agendamentos
-            WHERE agendamento_user = ?
-            """,
-            (session['usuario_id'],)
-        ).fetchall()
-
-    return jsonify({
-        "agendamentos": [row_to_dict(a) for a in agendamentos]
-    }), 200
-
-
-# 🔥 VER UM AGENDAMENTO
-@app.route('/api/agendamentos/<int:agendamento_id>', methods=['GET'])
-def ver_agendamento_especifico(agendamento_id):
-    if 'usuario_id' not in session:
-        return jsonify({"message": "Não autenticado"}), 401
-
-    with get_db() as conn:
-        agendamento = conn.execute(
-            """
-            SELECT id, agendamento_user, titulo, descricao, status
-            FROM agendamentos
-            WHERE id = ? AND agendamento_user = ?
-            """,
-            (agendamento_id, session['usuario_id'])
-        ).fetchone()
-
-    if not agendamento:
-        return jsonify({"message": "Agendamento não encontrado"}), 404
-
-    return jsonify({
-        "agendamento": row_to_dict(agendamento)
-    }), 200
-
-
-# 🔥 CRIAR AGENDAMENTO
-@app.route('/criar-agendamento', methods=['POST'])
-def criar_agendar():
-    if 'usuario_id' not in session:
-        return jsonify({"message": "Não autenticado"}), 401
-
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"message": "Nenhum dado enviado"}), 400
-
-    titulo = data.get('titulo')
-    descricao = data.get('descricao')
-    status = data.get('status', 0)
-    if not titulo:
-        return jsonify({"message": "Título é obrigatório"}), 400
-
-    with get_db() as conn:
-        cursor = conn.execute(
-            """
-            INSERT INTO agendamentos (agendamento_user, titulo, descricao, status)
-            VALUES (?, ?, ?, ?)
-            """,
-            (session['usuario_id'], titulo, descricao, status)
-        )
-        conn.commit()
-        novo_id = cursor.lastrowid
-        novo_agendamento = conn.execute(
-            """
-            SELECT id, agendamento_user, titulo, descricao, status
-            FROM agendamentos
-            WHERE id = ? AND agendamento_user = ?
-            """,
-            (novo_id, session['usuario_id'])
-        ).fetchone()
-
-    return jsonify({
-        "message": "Criado com sucesso",
-        "agendamento": row_to_dict(novo_agendamento)
-    }), 201
-
-
-# 🔥 ATUALIZAR AGENDAMENTO
-@app.route('/agendamentos/<int:agendamento_id>', methods=['PUT'])
-def atualizar_agendamento(agendamento_id):
-    if 'usuario_id' not in session:
-        return jsonify({"message": "Não autenticado"}), 401
-
-    with get_db() as conn:
-        agendamento = conn.execute(
-            """
-            SELECT id, agendamento_user, titulo, descricao, status
-            FROM agendamentos
-            WHERE id = ? AND agendamento_user = ?
-            """,
-            (agendamento_id, session['usuario_id'])
-        ).fetchone()
-
-    if not agendamento:
-        return jsonify({"message": "Agendamento não encontrado"}), 404
-
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"message": "Nenhum dado enviado"}), 400
-
-    titulo = data.get('titulo', agendamento['titulo'])
-    descricao = data.get('descricao', agendamento['descricao'])
-    status = data.get('status', agendamento['status'])
-
-    with get_db() as conn:
-        conn.execute(
-            """
-            UPDATE agendamentos
-            SET titulo = ?, descricao = ?, status = ?
-            WHERE id = ? AND agendamento_user = ?
-            """,
-            (titulo, descricao, status, agendamento_id, session['usuario_id'])
-        )
-        conn.commit()
-
-    return jsonify({"message": "Atualizado com sucesso"}), 200
-
-
-# 🔥 DELETAR AGENDAMENTO
-@app.route('/agendamentos/<int:agendamento_id>', methods=['DELETE'])
-def remover_agendamento(agendamento_id):
-    if 'usuario_id' not in session:
-        return jsonify({"message": "Não autenticado"}), 401
-
-    with get_db() as conn:
-        agendamento = conn.execute(
-            """
-            SELECT id FROM agendamentos
-            WHERE id = ? AND agendamento_user = ?
-            """,
-            (agendamento_id, session['usuario_id'])
-        ).fetchone()
-
-    if not agendamento:
-        return jsonify({"message": "Agendamento não encontrado"}), 404
-
-    with get_db() as conn:
-        conn.execute(
-            "DELETE FROM agendamentos WHERE id = ? AND agendamento_user = ?",
-            (agendamento_id, session['usuario_id'])
-        )
-        conn.commit()
-
-    return jsonify({"message": "Deletado com sucesso"}), 200
 
 
 # 🔥 START APP

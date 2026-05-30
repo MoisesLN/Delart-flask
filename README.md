@@ -58,18 +58,6 @@ O CRUD principal é feito por formulários HTML com redirecionamentos:
 
 ---
 
-## Endpoints JSON (opcional)
-
-Os endpoints JSON continuam disponíveis para compatibilidade:
-
-- `GET /api/agendamentos`
-- `GET /api/agendamentos/<id>`
-- `POST /criar-agendamento`
-- `PUT /agendamentos/<id>`
-- `DELETE /agendamentos/<id>`
-
----
-
 ## Status dos agendamentos
 
 | Código | Significado |
@@ -77,3 +65,12 @@ Os endpoints JSON continuam disponíveis para compatibilidade:
 | `0` | Pendente |
 | `1` | Confirmado |
 | `2` | Finalizado |
+
+---
+
+## Testes
+
+Para rodar os testes automatizados:
+
+1. `pip install -r requirements.txt`
+2. `pytest`
