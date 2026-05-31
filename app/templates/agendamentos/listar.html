@@ -26,6 +26,7 @@ Agendamentos
             <option value="2" {% if status == '2' %}selected{% endif %}>Finalizado</option>
         </select>
         <button type="submit">Filtrar</button>
+        <a href="{{ url_for('listar_agendamentos') }}"><button type="button">Limpar filtros</button></a>
     </form>
 
     <div class="lista">

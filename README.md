@@ -38,6 +38,7 @@ Lista todos os agendamentos cadastrados do usuário logado (HTML). Aceita filtro
 - `/agendamentos?busca=texto`
 - `/agendamentos?status=0`
 - `/agendamentos?status=1`
+- `/agendamentos?busca=texto&status=1`
 - `/agendamentos?status=2`
 
 ---

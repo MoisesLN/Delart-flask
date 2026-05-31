@@ -142,10 +142,14 @@ def listar_agendamentos():
     if status != '':
         try:
             status_int = int(status)
-            query += " AND status = ?"
-            params.append(status_int)
         except ValueError:
             status_filtrado = ''
+        else:
+            if status_int in (0, 1, 2):
+                query += " AND status = ?"
+                params.append(status_int)
+            else:
+                status_filtrado = ''
 
     query += " ORDER BY id DESC"
 
