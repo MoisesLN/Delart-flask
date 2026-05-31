@@ -138,9 +138,7 @@ Filtros disponíveis na listagem:
 Projeto atende aos requisitos de rotas Flask, templates com herança, arquivos estáticos, formulários GET/POST, sessões, SQLite3, CRUD completo, string de consulta e rotas parametrizadas.
 
 ## Integrantes
-- Nome 1
-- Nome 2
-- Nome 3
-
-## Repositório
-Link: COLOCAR_LINK_DO_GITHUB_AQUI
+- Christian Kallil Dantas Farah Matrícula: 20241101110028
+- Davi Dlleon Bandeira Silva Matrícula: 20241101110081
+- Davi Lucas Souza e Medeiros Silva Matrícula: 20241101110014
+- Moisés Lopes Nóbrega Matrícula: 20241101110019
